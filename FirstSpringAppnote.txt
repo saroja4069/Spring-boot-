@@ -1,0 +1,167 @@
+FirstSpringApplication using SpringBoot With MVC Architecture
+---------------------------- ------- -------------- ------ ------- ---------------
+
+index.jsp
+-----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<form action="/user" method="get">
+
+Username: <input type="text" name="username" /> <br>
+Password: <input type="text" name="password" /> <br>
+<input type="submit" value="Submit"/>
+</form>
+</body>
+</html>
+
+userController.java
+-----------------------
+package pack.spring.application.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import pack.spring.application.BusinessLogic.BusinessClass;
+import pack.spring.application.Model.User;
+
+@Controller
+public class userController {
+
+	@Autowired//creating instance
+	BusinessClass business;
+	
+	
+	
+	@GetMapping("/")
+	public String home()
+	{
+		return "index";
+	}
+	
+	@GetMapping("/user")
+	public String usercheck(@RequestParam("username") String user, @RequestParam("password") String pass,Model model)
+	{
+		//model.addAttribute("name", user);//key/value pair
+		//model.addAttribute("pass",pass);
+		
+		User userclass = new User();
+		
+		userclass.setUsername(user);
+		userclass.setPassword(pass);
+		
+		model.addAttribute("user", userclass);
+		
+		//BusinessClass business = new BusinessClass();
+		//String result = business.LoginCheck(user, pass);
+		
+		String result = business.LoginCheck(userclass);
+		
+		return result;
+	}
+}
+
+home.jsp
+-----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<!-- Welcome ${name} and ${pass}  -->
+
+Welcome ${user.getUsername()} and ${user.getPassword()}
+</body>
+</html>
+
+error.jsp
+----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+UnAuthorized user
+</body>
+</html>
+
+BusinessClass.java
+------------------------
+package pack.spring.application.BusinessLogic;
+
+import org.springframework.stereotype.Service;
+
+import pack.spring.application.Interface.UserInterface;
+import pack.spring.application.Model.User;
+
+@Service
+public class BusinessClass implements UserInterface {
+
+	@Override
+	public String LoginCheck(User user) {
+		String output="";
+		if(user.getUsername().equals("admin") && user.getPassword().equals("admin"))
+		{
+			output="home";
+		}
+		else
+		{
+			output="error";
+		}
+		return output;
+	}
+
+	
+}
+
+UserInterface.java
+----------------------
+package pack.spring.application.Interface;
+
+import pack.spring.application.Model.User;
+
+public interface UserInterface {
+
+	public String LoginCheck(User user);
+}
+
+User.java
+-----------
+package pack.spring.application.Model;
+
+public class User {
+
+	private String username;
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	private String password;
+}
