@@ -1,0 +1,185 @@
+
+Index.jsp
+-----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<form action="Servlet1" method="post">
+Username: <input type="text" name="uname" /><br>
+Password: <input type="text" name="pwd" /><br>
+Email:    <input type="text" name="email" /><br>
+<input type="Submit" value="Click" />
+</form>
+</body>
+</html>
+
+Servlet1.java
+----------------
+package jspservletdemo1;
+
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+import Businesslogic.Logicclass;
+import Model.Student;
+
+/**
+ * Servlet implementation class Servlet1
+ */
+public class Servlet1 extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public Servlet1() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		response.getWriter().append("Served at: ").append(request.getContextPath());
+	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+		String username=request.getParameter("uname");
+		String password=request.getParameter("pwd");
+		String email=request.getParameter("email");
+		
+		
+		request.setAttribute("name", username);
+		request.setAttribute("pwd", password);
+		request.setAttribute("email", email);
+		
+		Student s = new Student();
+		s.setUsername(username);
+		s.setPassword(password);
+		s.setMail(email);
+		
+		Logicclass lc = new Logicclass();
+		String Page = lc.Checkuser(s.getUsername(),s.getPassword());
+		
+		
+		RequestDispatcher dispatcher = request.getRequestDispatcher(Page);
+		dispatcher.forward(request, response);
+	}
+
+}
+
+
+Student.java
+----------------
+package Model;
+
+public class Student {
+
+	String Username;
+	public String getUsername() {
+		return Username;
+	}
+	public void setUsername(String username) {
+		Username = username;
+	}
+	public String getPassword() {
+		return Password;
+	}
+	public void setPassword(String password) {
+		Password = password;
+	}
+	public String getMail() {
+		return Mail;
+	}
+	public void setMail(String mail) {
+		Mail = mail;
+	}
+	String Password;
+	String Mail;
+	
+}
+
+Logicclass.java
+-------------------
+package Businesslogic;
+
+import Logicinterface.Studentinterface;
+
+public class Logicclass implements Studentinterface{
+
+	public String Checkuser(String username, String password)
+	{
+		String Page;
+		
+		if(username.equals("Sara") && password.equals("Saroja4069"))
+		{
+			Page = "Success.jsp";
+			System.out.println("Valid User");
+		}
+		else
+		{
+			Page = "Error.jsp";
+			System.out.println("Invalid User");
+		}
+		return Page;
+	}
+}
+
+Studentinterface.java
+--------------------------
+package Logicinterface;
+
+public interface Studentinterface {
+
+	public String Checkuser(String username, String password);
+	
+}
+
+
+Success.jsp
+--------------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+Login Successfully
+</body>
+</html>
+
+Error.jsp
+-----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+Login Failed
+</body>
+</html>
