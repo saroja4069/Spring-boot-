@@ -1,0 +1,203 @@
+//"Created a Basic Arithmetic Calculator Using java spring boot MVC Architecture"
+
+index.jsp
+-----------
+
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<form action="/user" method="get" >
+First_Number: <input type="number" name="fnumber" /><br>
+Second_Number:<input type="number" name="snumber" /><br>
+Select Operation: 
+<select name="operation">
+	<option value="addition">Addition (+)</option>
+	<option value="subtraction">Subtraction (-)</option>
+	<option value="multiplication">Multiplication (*)</option>
+	<option value="division">Division (/)</option>
+</select><br>
+<input type="submit" value="Calculate" />
+</form>
+
+Welcome ${number1} and ${number2} and ${operation} ${output}
+
+</body>
+</html>
+
+userController.java
+-----------------------
+package pack.spring.application.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import pack.spring.application.BussinessLogic.BusinessClass;
+import pack.spring.application.Model.User;
+
+@Controller
+public class userController {
+	
+	@Autowired//creating instance
+	BusinessClass business;
+	
+	@GetMapping("/")
+	public String home()
+	{
+		return "index";
+	}
+	
+	@GetMapping("/user")
+	public String usercheck(@RequestParam("fnumber") int num1, @RequestParam("snumber") int num2, @RequestParam("operation") String operation, Model model)
+	{
+		model.addAttribute("number1", num1);
+		model.addAttribute("number2", num2);
+		model.addAttribute("operation", operation);
+		
+		User userclass = new User();
+		
+		userclass.setNum1(num1);
+		userclass.setNum2(num2);
+		userclass.setOperation(operation);
+		
+		//BusinessClass business = new BusinessClass();
+		//int output = business.performOperation(num1, num2, operation);
+		//model.addAttribute("output", output);
+		
+		int output = business.performOperation(userclass);
+		model.addAttribute("output", output);
+		
+		return "index";
+	}
+}
+
+
+BusinessClass.java
+-----------------------
+package pack.spring.application.BussinessLogic;
+
+import org.springframework.stereotype.Service;
+
+import pack.spring.application.Interface.Userinterface;
+import pack.spring.application.Model.User;
+
+@Service
+public class BusinessClass implements Userinterface{
+
+	public int performOperation(User user) {
+
+	    // Assuming User class has properties or methods to get num1 and num2
+	    int num1 = user.getNum1();
+	    int num2 = user.getNum2();
+	    String operation = user.getOperation();
+	    int result;
+
+	    switch (operation) {
+	        case "addition":
+	            result = num1 + num2;
+	            break;
+	        case "subtraction":
+	            result = num1 - num2;
+	            break;
+	        case "multiplication":
+	            result = num1 * num2;
+	            break;
+	        case "division":
+	            if (num2 != 0) {
+	                result = num1 / num2;
+	            } else {
+	                throw new ArithmeticException("Division by zero is not allowed.");
+	            }
+	            break;
+	        default:
+	            throw new IllegalArgumentException("Invalid operation");
+	    }
+	    return result;
+	}
+
+}
+
+Userinterface.java
+----------------------
+package pack.spring.application.Interface;
+
+import pack.spring.application.Model.User;
+
+public interface Userinterface {
+
+	public int performOperation(User user);
+	//public int performOperation(User user);
+	//public int performOperation(int num1, int num2, String operation);
+	
+}
+
+
+User.java
+-----------
+package pack.spring.application.Model;
+
+public class User {
+
+	public int num1;
+	public int getNum1() {
+		return num1;
+	}
+	public void setNum1(int num1) {
+		this.num1 = num1;
+	}
+	public int num2;
+	public int getNum2() {
+		return num2;
+	}
+	public void setNum2(int num2) {
+		this.num2 = num2;
+	}
+	public String operation;
+	public String getOperation() {
+		return operation;
+	}
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+	
+}
+
+home.jsp
+-----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+Welcome ${number1} and ${number2} and ${operation} ${output}
+
+</body>
+</html>
+
+error.jsp
+----------
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+UnAuthorized user
+</body>
+</html>
