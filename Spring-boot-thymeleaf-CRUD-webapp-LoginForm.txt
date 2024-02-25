@@ -1,0 +1,493 @@
+Spring-boot-thymeleaf-CRUD-webapp-LoginForm
+--------------------------------------------------------------
+
+PACKAGE : pack.spring.application.Model
+--------------
+CLASS : StudentLogin.java
+----------
+
+package pack.spring.application.Model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+//Adding the table name
+@Table (name="Student2")
+public class StudentLogin {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	//@Column(name="Username")
+	private String username;
+	
+	
+	//@Column(name="Password")
+	private String password;
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+}
+
+PACKAGE : pack.spring.application.Repository
+--------------
+INTERFACE : stLoginRepo.java
+----------------
+
+package pack.spring.application.Repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+
+import pack.spring.application.Model.StudentLogin;
+
+
+public interface StLoginRepo extends JpaRepository<StudentLogin, Integer>{
+
+	@Query(value="select * from Student2 u where u.username=:username and u.password=:password",nativeQuery=true) 
+	StudentLogin findbyname(String username, String password);
+
+}
+
+PACKAGE : pack.spring.application.Service
+--------------
+INTERFACE : StLoginService.java
+----------------
+package pack.spring.application.Service;
+
+import java.util.List;
+
+import pack.spring.application.Model.StudentLogin;
+
+public interface StLoginService {
+
+	public List<StudentLogin> getAllUser(); 
+	
+	public StudentLogin usersave(String user,String pass);
+
+	public StudentLogin userupdate(String id, String user, String pass);
+	 
+	StudentLogin getstById(String id);
+	
+	public void delete(String id);
+}
+
+CLASS : StLoginServiceImpl.java
+---------
+package pack.spring.application.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import pack.spring.application.Model.StudentLogin;
+
+import pack.spring.application.Repository.StLoginRepo;
+
+@Service
+public class StLoginServiceImpl implements StLoginService{
+
+	@Autowired
+	StLoginRepo stLoginRepo;
+	
+	public List<StudentLogin> getAllUser() {
+		List <StudentLogin> user = new ArrayList<StudentLogin>();
+		stLoginRepo.findAll().forEach(user1 -> user.add(user1));
+		return user;
+	}
+	
+	//Saving a specific record by using the method save()
+		public StudentLogin usersave(String user,String pass) {
+			// TODO Auto-generated method stub
+			StudentLogin stulogin=new StudentLogin();
+			stulogin.setUsername(user);
+			stulogin.setPassword(pass);
+			return stLoginRepo.save(stulogin);
+		}
+		
+		//Updating a specific record by using the method save()
+		public StudentLogin userupdate(String id, String user, String pass) {
+			// TODO Auto-generated method stub
+			StudentLogin stloginup=new StudentLogin();
+			stloginup.setId(Integer.parseInt(id));
+			stloginup.setUsername(user);
+			stloginup.setPassword(pass);
+			return stLoginRepo.save(stloginup);
+			}	
+
+	//Finding a record by using the method findById()
+		
+		@Override
+		public StudentLogin getstById(String id) {
+			// TODO Auto-generated method stub
+			return stLoginRepo.getById(Integer.parseInt(id));
+		}
+
+		//deleting a specific record by using the method deleteById()
+		public void delete(String id) {
+			// TODO Auto-generated method stub
+			stLoginRepo.deleteById(Integer.parseInt(id));
+		}
+}
+
+
+PACKAGE : pack.spring.application.Controller
+--------------
+CLASS : ManageController.java
+---------
+package pack.spring.application.Controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import pack.spring.application.Model.StudentLogin;
+
+import pack.spring.application.Service.StLoginServiceImpl;
+
+
+@Controller
+public class ManageController {
+
+	@Autowired
+	StLoginServiceImpl stLoginServiceImpl;
+	
+	@RequestMapping("/")
+	public String index() {
+		//returns to index.html
+		return "Index";
+	}
+	
+	//@GetMapping("/login")
+	
+	@GetMapping("/login")
+	private ModelAndView saveStudent(@RequestParam("username") String user,@RequestParam("password") String pass) {
+		stLoginServiceImpl.usersave(user,pass);
+		System.out.println("hello");
+		
+		 ModelAndView modelAndView = new ModelAndView();
+	
+	       	 modelAndView.setViewName("login_data");
+	       	 StudentLogin login = new StudentLogin(); 
+	       	 login.setUsername(user);
+	       	 login.setPassword(pass);
+	        	// Add the user object to be displayed on login_data.html
+	       	 modelAndView.addObject("user", login);
+	      	 return modelAndView;
+	}
+	
+	
+	 @GetMapping("/View_data")
+	 public ModelAndView viewData() {
+	        	
+		ModelAndView modelAndView = new ModelAndView();
+	        	
+		modelAndView.setViewName("View_data"); // Set the view name to View_data.html
+	        	List<StudentLogin> userList = stLoginServiceImpl.getAllUser();
+	        	modelAndView.addObject("dataList", userList); // Add userList to be displayed in View_data.html
+	       	return modelAndView;
+	    }
+	
+	 
+	 @GetMapping("/view_details{id}")
+	 private  ModelAndView Getview(@RequestParam("id") String id) {
+		System.out.println("Clicked id:"+id);
+		
+		ModelAndView modelAndView = new ModelAndView();
+       		
+		modelAndView.setViewName("details"); // Set the view name to View_data.html
+        		StudentLogin studlog = stLoginServiceImpl.getstById(id);
+        		modelAndView.addObject("dataView", studlog); // Add userList to be displayed in View_data.html
+        		return modelAndView;
+	 }
+	 
+	 @GetMapping("/update_details{id}")
+	 private  ModelAndView Getupdated(@RequestParam("id") String id) {
+		System.out.println("You are on the way Clicked Update id:"+id);
+		
+		ModelAndView modelAndView = new ModelAndView();
+	        
+		modelAndView.setViewName("update_details"); // Set the view name to View_data.html
+	        	StudentLogin studlog = stLoginServiceImpl.getstById(id);
+	       	modelAndView.addObject("dataUpdate", studlog); // Add userList to be displayed in View_data.html
+	       	return modelAndView;
+	}
+	 
+	 @PostMapping("/updatedata")
+	 private  ModelAndView Updatedata(@RequestParam("id") String id,@RequestParam("username") String user,@RequestParam("password") String pass) {
+		System.out.println("hi");
+		 
+		stLoginServiceImpl.userupdate(id,user,pass);
+		System.out.println("hi");
+		System.out.println("You are on the way Clicked Update ");
+			
+		ModelAndView modelAndView = new ModelAndView();
+	        
+		modelAndView.setViewName("Updated_data"); // Set the view name to View_data.html
+	       	StudentLogin loginupdate = new StudentLogin(); 
+	       	loginupdate.setId(Integer.parseInt(id));
+	        	loginupdate.setUsername(user);
+	       	loginupdate.setPassword(pass);
+	        	modelAndView.addObject("Updateddata", loginupdate); // Add userList to be displayed in View_data.html
+	        	return modelAndView;
+	}
+	 
+	 //Deleting the data
+	 @GetMapping("/delete_details{id}")
+	private  ModelAndView deletestudent(@RequestParam("id") String id) {
+
+		System.out.println("Deleting student with ID: " + id);
+		 
+		// Perform deletion operation using your service
+		stLoginServiceImpl.delete(id);
+		 
+		ModelAndView modelAndView = new ModelAndView();
+	        	modelAndView.setViewName("deletedata"); // Set the view name to View_data.html
+	       	return modelAndView;
+	}
+
+	
+}
+
+Thymeleaf
+-------------
+
+Index.html
+--------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<form action="login" method="get">
+	<table>
+		<center>
+			<h4>Login Page</h4>
+			<tr>
+				<td><label for="username">UserName</label></td>
+				<td><input type="text" name="username"></intput></td>
+			</tr>
+
+			<tr>
+				<td><label for="password">Password</label></td>
+				<td><input type="password" name="password"></intput></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input type="submit" value="Submit"></input></td>
+			</tr>
+		</center>
+	</table>
+</form>
+
+</body>
+</html>
+
+login_data.html
+-------------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Login data</title>
+</head>
+<body>
+
+<table align="center">
+	<tr>
+		<td><h4>UserName:</h4></td>
+		<td><h4 th:text="${user.username}"></h4></td>
+	</tr>
+	<tr>
+		<td><h4>Password:</h4></td>
+		<td><h4 th:text="${user.password}"></h4></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td><button><a href="View_data">ViewData</a></button></td>
+	</tr>
+</table>
+
+</body>
+</html>
+
+View_data.html
+-------------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>UserName</th>
+                <th>Password</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="data : ${dataList}">
+                <td th:text="${data.id}"></td>
+                <td th:text="${data.username}"></td>
+                <td th:text="${data.password}"></td>
+                <td><a th:href="@{/view_details(id=${data.id})}">View</a>
+                <td><a th:href="@{/update_details(id=${data.id})}">Update</a>
+                <td><a th:href="@{/delete_details(id=${data.id})}">Delete</a>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
+
+details.html
+---------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>User Details</title>
+</head>
+<body>
+
+<table align="center">
+    <tr>
+        <td><h4>ID:</h4></td>
+        <td><h4 th:text="${dataView.id}"></h4></td>
+    </tr>
+    <tr>
+        <td><h4>UserName:</h4></td>
+        <td><h4 th:text="${dataView.username}"></h4></td>
+    </tr>
+    <tr>
+        <td><h4>Password:</h4></td>
+        <td><h4 th:text="${dataView.password}"></h4></td>
+    </tr>
+</table>
+
+</body>
+</html>
+
+update_details.html
+-------------------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+
+<title>User Details</title>
+</head>
+<body>
+
+<form  action="/updatedata" method="post">
+<table align="center">
+    <tr>
+        <td><h4>ID:</h4></td>
+        <td><input type="text" th:field="${dataUpdate.id}"/></td>
+    </tr>
+    <tr>
+        <td><h4>UserName:</h4></td>
+        <td><input type="text" th:field="${dataUpdate.username}" /></td>
+    </tr>
+    <tr>
+        <td><h4>Password:</h4></td>
+        <td><input type="text" th:field="${dataUpdate.password}" /></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><input type="submit" th:value="update"/></td>
+    </tr>
+</table>
+</form>
+
+</body>
+</html>
+
+Updated_data.html
+------------------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Login data</title>
+</head>
+<body>
+
+<table align="center">
+	<tr>
+		<td><h4>UserName:</h4></td>
+		<td><h4 th:text="${Updateddata.username}"></h4></td>
+	</tr>
+	<tr>
+		<td><h4>Password:</h4></td>
+		<td><h4 th:text="${Updateddata.password}"></h4></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td><button><a href="View_data">ViewData</a></button></td>
+	</tr>
+</table>
+
+</body>
+</html>
+
+deletedata.html
+-------------------
+<!DOCTYPE html>
+<html xmlns:th="https://thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Delete Confirmation</title>
+</head>
+<body>
+
+    <h2>Student Deleted Successfully</h2>
+    <p>The student has been deleted from the system.</p>
+    //<a th:href="@{/index}">Return to Home</a> <!-- Provide a link to go back to the home page or any other relevant page -->
+
+</body>
+</html>
