@@ -1,0 +1,229 @@
+AOP-Aspect Oriented Programming
+---------------------------------------------
+
+Eample program for Employee with three fields
+----------------------------------------------------------
+
+AOP_Example_Program_For_Employee_With_Three_Fields
+----------------------------------------------------------------------------
+
+AOP_Example/pom.xml : (To add springweb and aop dependencies)
+-------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.3</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>pack.spring.application.aop</groupId>
+	<artifactId>AOP_Example</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>AOP_Example</name>
+	<description>Spring Boot Project for AOP Example </description>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+Create a package for model
+----------------------------------
+
+PACKAGE : pack.spring.application.aop.model
+--------------
+
+CLASS : Employee.java
+----------
+
+package pack.spring.application.aop.model;
+
+public class Employee {
+
+	private String empId;
+	private String firstName;
+	private String secondName;
+	
+	
+	public Employee() {
+	}
+	
+	public String getEmpId() {
+		return empId;
+	}
+	public void setEmpId(String empId) {
+		this.empId = empId;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+	public String getSecondName() {
+		return secondName;
+	}
+	public void setSecondName(String secondName) {
+		this.secondName = secondName;
+	}
+	
+	
+}
+
+
+Create another package for service 
+
+PACKAGE : pack.spring.application.aop.service
+--------------
+
+CLASS : EmployeeService.java
+----------
+
+package pack.spring.application.aop.service;
+
+import org.springframework.stereotype.Service;
+
+import pack.spring.application.aop.model.Employee;
+
+@Service
+public class EmployeeService {
+
+	public Employee createEmployee(String empId, String fname, String sname) {
+		
+		Employee emp = new Employee();
+		emp.setEmpId(empId);
+		emp.setFirstName(fname);
+		emp.setSecondName(sname);
+		
+		return emp;
+	}
+}
+
+
+create package for controller
+
+PACKAGE : pack.spring.application.controller
+--------------
+
+CLASS : EmployeeController.java
+---------
+
+package pack.spring.application.aop.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import pack.spring.application.aop.model.Employee;
+import pack.spring.application.aop.service.EmployeeService;
+
+@RestController
+public class EmployeeController {
+
+	@Autowired
+	private EmployeeService employeeService;
+	
+	@GetMapping("/add/employee")
+	//@RequestMapping(value = "/add/employee",method = RequestMethod.GET)
+	public Employee addEmployee(@RequestParam("empId") String empId, @RequestParam("firstname") String fname, @RequestParam("secondname") String sname) {
+		
+		System.out.println();
+		return employeeService.createEmployee(empId, fname, sname);
+	}
+}
+
+
+create package for aspect
+
+PACKAGE : pack.spring.application.aop.aspect
+--------------
+
+CLASS : EmployeeServiceAspect.java
+---------
+
+package pack.spring.application.aop.aspect;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class EmployeeServiceAspect {
+
+	@Before(value = "execution(* pack.spring.application.aop.service.EmployeeService.*(..)) and args(empId, fname, sname)")
+	public void beforeAdvice(JoinPoint joinPoint, String empId, String fname, String sname) {
+		System.out.println("Before method:" + joinPoint.getSignature());
+		
+		System.out.println("Creating Employee with first name -" + fname + ", second name - " + sname + " and id -" +empId );
+	}
+	
+	@After(value = "execution(* pack.spring.application.aop.service.EmployeeService.*(..)) and args(empId, fname, sname)")
+	public void beforeAdvice1(JoinPoint joinPoint, String empId, String fname, String sname) {
+		System.out.println("After method:" + joinPoint.getSignature());
+		
+		System.out.println("Creating Employee with first name -" + fname + ", second name - " + sname + " and id -" +empId );
+	}
+}
+
+Add an annotation in the main class
+
+PACKAGE : pack.spring.application.aop
+--------------
+
+CLASS : AopExampleApplication.java
+---------
+
+package pack.spring.application.aop;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+
+@SpringBootApplication
+@EnableAspectJAutoProxy(proxyTargetClass=true)
+public class AopExampleApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(AopExampleApplication.class, args);
+	}
+
+}
