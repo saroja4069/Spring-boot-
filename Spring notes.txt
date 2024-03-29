@@ -1,0 +1,75 @@
+File -> New -> other -> Search for "Spring boot" in that select "Spring Starter Project" Click Next 
+
+____________________________________________
+|  Name: FirstSpringApplication			|
+|  Type: Maven				|
+|  Group: pack.spring.application			|
+|  Artifact: FirstSpringApplication		|
+|  Version: 0.0.1 - SNAPSHOT			|
+|  Description: Demo projection for SpringBoot	|
+|  package: FirstSpringApplication		|
+|-------------------------------------------------------------------|
+
+click Next 
+Availabel -> Spring Web
+Click Next -> Finish
+
+In a Project
+-src  -> main  
+	--> By selecting "main" Right click "main" -> New -> Folder --> foldername:"webapp" 
+	-->By selecting "webapp" Right click "webapp" -> New -> Folder --> foldername:"WEB-INF" 
+	-->By selecting "WEB-INF" Right click "WEB-INF" -> New -> Folder --> foldername:"jsp"
+		-->By selecting "jsp" Right click "jsp" -> New -> other -->search for jsp in that select "jsp File" ->Next -->Filename:"index.jsp" ->Finish
+		-->By selecting "jsp" Right click "jsp" -> New -> other -->search for jsp in that select "jsp File" ->Next -->Filename:"home.jsp" ->Finish
+		-->By selecting "jsp" Right click "jsp" -> New -> other -->search for jsp in that select "jsp File" ->Next -->Filename:"error.jsp" ->Finish
+-src/main/java
+	Main Package (Package:"pack.spring.application")
+	for this package there will be one Class (Class:"FirstSpringApplication")
+		
+	By Selecting the Main Package 
+		Create a new package for Controller
+		Right Click -> New ->Package -> package name:"pack.spring.application.Controller" 
+			For this Controller package create on class 
+			Right Click -> New -> Class -> Class name:"userController"
+
+userController.java
+------------------------
+package pack.spring.application.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import pack.spring.application.BusinessLogic.BusinessClass;
+
+@Controller
+public class userController {
+
+	@Autowired//creating instance
+	BusinessClass business;
+	
+	
+	
+	@GetMapping("/")
+	public String home()
+	{
+		return "index";
+	}
+	
+	@GetMapping("/user")
+	public String usercheck(@RequestParam("username") String user, @RequestParam("password") String pass,Model model)
+	{
+		model.addAttribute("name", user);//key/value pair
+		model.addAttribute("pass",pass);
+		
+		//BusinessClass business = new BusinessClass();
+		//String result = business.LoginCheck(user, pass);
+		
+		String result = business.LoginCheck(user, pass);
+		
+		return result;
+	}
+}
+
